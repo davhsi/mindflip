@@ -9,39 +9,54 @@ const EmojiMeter = () => {
     { icon: "😂", label: "Excited" },
   ];
 
-  // Initialize ratings for each emoji
-  const [ratings, setRatings] = useState(emojis.map(() => 50)); // Default all sliders to 50
+  // Initialize state to store the slider value (0-100)
+  const [sliderValue, setSliderValue] = useState(50);
 
-  const handleSliderChange = (value, index) => {
-    const updatedRatings = [...ratings];
-    updatedRatings[index] = value;
-    setRatings(updatedRatings);
+  // Handle slider change
+  const handleSliderChange = (e) => {
+    setSliderValue(Number(e.target.value));
+  };
+
+  // Get emotion based on the slider value
+  const getEmotion = () => {
+    if (sliderValue < 20) return "Angry";
+    if (sliderValue < 40) return "Sad";
+    if (sliderValue < 60) return "Neutral";
+    if (sliderValue < 80) return "Happy";
+    return "Excited";
   };
 
   return (
     <div className="flex flex-col items-center space-y-6 bg-gray-100 p-6 rounded-lg shadow-md w-full max-w-xl">
       <h2 className="text-xl font-semibold text-gray-800">How do you feel?</h2>
-      <div className="w-full space-y-4">
-        {emojis.map((emoji, index) => (
-          <div key={index} className="flex items-center space-x-4">
-            <div className="flex flex-col items-center w-16">
+      
+      {/* Emoji meter container */}
+      <div className="relative w-full">
+        {/* Slider */}
+        <input
+          type="range"
+          min="0"
+          max="100"
+          value={sliderValue}
+          onChange={handleSliderChange}
+          className="w-full"
+        />
+
+        {/* Emoji labels spaced across the meter */}
+        <div className="absolute top-0 left-0 right-0 flex justify-between px-2 text-sm text-gray-600">
+          {emojis.map((emoji, index) => (
+            <div key={index} className="flex flex-col items-center">
               <span className="text-3xl">{emoji.icon}</span>
-              <p className="text-sm text-gray-600">{emoji.label}</p>
+              <p>{emoji.label}</p>
             </div>
-            <div className="flex-grow">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={ratings[index]}
-                onChange={(e) => handleSliderChange(Number(e.target.value), index)}
-                className="w-full"
-              />
-              <p className="text-right text-sm text-gray-500 mt-1">{ratings[index]}%</p>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
+
+      {/* Emotion state */}
+      <p className="text-center text-lg text-gray-700 mt-4">{`Emotion: ${getEmotion()}`}</p>
+
+      {/* Submit Button */}
       <button className="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
         Submit
       </button>

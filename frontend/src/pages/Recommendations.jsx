@@ -1,64 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Recommendations = () => {
-  const books = [
-    "Atomic Habits",
-    "The Alchemist",
-    "Thinking, Fast and Slow",
-    "Sapiens",
-    "The Subtle Art of Not Giving a F*ck",
-  ];
+  const [emotion, setEmotion] = useState(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation(); // To get state passed from Home page
 
-  const movies = [
-    "The Pursuit of Happyness",
-    "Forrest Gump",
-    "Good Will Hunting",
-    "Inception",
-    "The Shawshank Redemption",
-  ];
-
-  const songs = [
-    "Imagine - John Lennon",
-    "Bohemian Rhapsody - Queen",
-    "Lose Yourself - Eminem",
-    "Shape of You - Ed Sheeran",
-    "Blinding Lights - The Weeknd",
-  ];
-
-  const tasks = [
-    "Phone a Friend",
-    "Go for a Walk",
-    "Do 10 Pushups",
-    "Drink a Glass of Water",
-    "Write Down 3 Things You're Grateful For",
-  ];
-
-  const Section = ({ title, items }) => (
-    <div className="mb-8">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">{title}</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item, index) => (
-          <div
-            key={index}
-            className="p-4 bg-white shadow rounded-lg hover:shadow-md transition"
-          >
-            <p className="text-gray-700 text-sm font-medium">{item}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  useEffect(() => {
+    // Check if the emotion was passed through navigation state
+    if (location.state && location.state.emotion) {
+      setEmotion(location.state.emotion);
+      setFeedbackText(location.state.feedbackText || ""); // Optional: You can pass feedbackText from Home as well
+    } else {
+      navigate("/"); // If no emotion is passed, navigate back to Home
+    }
+  }, [location, navigate]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 p-6">
-      <div className="max-w-5xl mx-auto bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-          Recommendations
-        </h1>
-        <Section title="Recommended Books" items={books} />
-        <Section title="Recommended Movies" items={movies} />
-        <Section title="Recommended Songs" items={songs} />
-        <Section title="Tasks to Uplift Your Mood" items={tasks} />
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-200 p-4">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Your Emotion</h1>
+      <p className="text-lg text-gray-600 mb-6 text-center">
+        Based on your feedback, we detected your emotion!
+      </p>
+
+      <div className="bg-white p-6 rounded-xl shadow-2xl w-full max-w-lg flex flex-col items-center">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Emotion Detected: {emotion ? emotion : "Loading..."}
+        </h2>
+
+      
+        {/* You can integrate the book API here using emotion */}
       </div>
     </div>
   );

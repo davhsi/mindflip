@@ -1,127 +1,114 @@
 import React, { useState } from "react";
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const Home = () => {
-  const navigate = useNavigate();
-  const [selectedMood, setSelectedMood] = useState(null);
-  const [moodRatings, setMoodRatings] = useState({});
-  const [feedbackText, setFeedbackText] = useState(""); // State for text input
+  const [sliderValue, setSliderValue] = useState(0);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [predictedEmotion, setPredictedEmotion] = useState(null);
+
+  const navigate = useNavigate(); // Initialize navigate function
 
   const moodOptions = [
-    { label: "Happy", emoji: "😊" },
-    { label: "Sad", emoji: "😔" },
-    { label: "Excited", emoji: "😃" },
-    { label: "Angry", emoji: "😠" },
-    { label: "Neutral", emoji: "😐" },
+    { label: "Angry", emoji: "😠", range: [0, 20] },
+    { label: "Sad", emoji: "😔", range: [21, 40] },
+    { label: "Neutral", emoji: "😐", range: [41, 60] },
+    { label: "Happy", emoji: "😊", range: [61, 80] },
+    { label: "Excited", emoji: "😃", range: [81, 100] },
   ];
 
-  const handleMoodSelect = (moodLabel) => {
-    
-    setSelectedMood(moodLabel === selectedMood ? null : moodLabel);
-    if (!moodRatings[moodLabel]) {
-      setMoodRatings({ ...moodRatings, [moodLabel]: 5 }); // Default to 5 (midpoint)
-    }
+  const getSelectedMood = () => {
+    return moodOptions.find(
+      (mood) => sliderValue >= mood.range[0] && sliderValue <= mood.range[1]
+    );
   };
 
-  const handleRatingChange = (moodLabel, rating) => {
-    setMoodRatings({ ...moodRatings, [moodLabel]: rating });
+  const handleSliderChange = (e) => {
+    setSliderValue(Number(e.target.value));
   };
 
-  const handleTextChange = (e) => {
-    setFeedbackText(e.target.value);
-  };
-
-  const handleSubmit = () => {
-   
+  const handleSubmit = async () => {
+    const selectedMood = getSelectedMood();
     if (selectedMood) {
-      const submissionData = {
-        mood: selectedMood,
-        rating: moodRatings[selectedMood] || "Not Rated",
-        feedback: feedbackText,
-      };
-  
-      // Store in localStorage:
-      localStorage.setItem("submissionData", JSON.stringify(submissionData)); // Key, Value (must be stringified)
-       
-      alert( // Keep your alert for now
-        `Selected Mood: ${selectedMood}, Rating: ${
-          moodRatings[selectedMood] || "Not Rated"
-        }, Feedback: ${feedbackText}`
-      );
-      navigate("/recommendations");
+      const textToSend = feedbackText || selectedMood.label;
+
+      try {
+        const response = await fetch("https://233b-34-147-69-34.ngrok-free.app/predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ text: textToSend }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setPredictedEmotion(data.emotion);
+          // Directly navigate to the Recommendations page
+          navigate("/recommendations", { state: { emotion: data.emotion } });
+        } else {
+          alert("Failed to predict emotion.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+      }
     } else {
-      alert("Please select a mood.");
+      alert("Please adjust the slider to select a mood.");
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-200 p-2">
-      <h1 className="absolute top-25 text-4xl font-extrabold text-gray-900 mb-4">
-        Welcome to MindFlip
-      </h1>
-      <p className="absolute top-40 text-lg text-gray-600 mb-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-blue-200 p-4">
+      <h1 className="text-4xl font-extrabold text-gray-900 mb-2">Welcome to MindFlip</h1>
+      <p className="text-lg text-gray-600 mb-6 text-center">
         A personalized mental health recommendation system just for you!
       </p>
-      <div className="bg-blue-200 p-3 rounded-xl shadow-2xl w-full max-w-lg">
-        <div className="flex justify-center gap-4 mb-4">
-          {moodOptions.map((option) => (
-            <div key={option.label} className="flex flex-col items-center">
-              <button
-                onClick={() => handleMoodSelect(option.label)}
-                className={`text-3xl transition-all duration-300 mb-2 p-2 rounded-full
-                  ${selectedMood === option.label ? "bg-yellow-200 shadow-inner" : "hover:bg-yellow-100"}`}
-              >
-                {option.emoji}
-              </button>
-              <p className="text-sm text-gray-800">{option.label}</p>
-            </div>
-          ))}
+
+      <div className="bg-blue-200 p-6 rounded-xl shadow-2xl w-full max-w-lg flex flex-col items-center">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">How do you feel?</h2>
+
+        {/* Slider Container */}
+        <div className="relative w-full mt-4">
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={sliderValue}
+            onChange={handleSliderChange}
+            className="w-full h-3 rounded-lg appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, rgb(39, 8, 116) ${sliderValue}%, #ccc ${sliderValue}%)`,
+            }}
+          />
+
+          {/* Mood Emojis Below Slider */}
+          <div className="flex justify-between px-2 text-lg text-gray-800 mt-4">
+            {moodOptions.map((mood, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <span className="text-3xl">{mood.emoji}</span>
+                <p className="text-sm">{mood.label}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {selectedMood && (
-  <div className="w-full">
-    <input
-      type="range"
-      min="1"
-      max="10"
-      value={moodRatings[selectedMood] || 5}
-      onChange={(e) => handleRatingChange(selectedMood, parseInt(e.target.value))}
-      className="w-full h-2 rounded-lg appearance-none bg-gray-200 cursor-pointer"
-      style={{
-        background: `linear-gradient(to right,rgb(31, 25, 142) ${
-          ((moodRatings[selectedMood] - 1) / 9) * 100
-        }%, #E5E7EB ${(moodRatings[selectedMood] / 10) * 100}%)`
-      }}
-    />
-    <div className="flex justify-between text-sm text-gray-500 mt-1">
-      {[...Array(10)].map((_, index) => (
-        <span key={index}>{index + 1}</span>
-      ))}
-    </div>
-  </div>
-)}
-
-
+        {/* Feedback Textbox */}
         <textarea
-          className="w-full border p-2 rounded mt-4"
+          className="w-full border border-gray-700 p-2 rounded mt-8 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter your feedback here..."
           value={feedbackText}
-          onChange={handleTextChange}
+          onChange={(e) => setFeedbackText(e.target.value)}
           rows="4"
         />
 
-        <div className="flex justify-center mt-4"> {/* Centered button */}
-          <button
-            onClick={handleSubmit}
-            className="w-60 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300 ease-in-out"
-          >    
-            Submit Feedback
-          </button>
-        </div>
+        {/* Submit Button */}
+        <button
+          onClick={handleSubmit}
+          className="mt-6 w-60 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition-all duration-300"
+        >
+          Submit
+        </button>
       </div>
-
-      {/* ... (rest of your code) */}
     </div>
   );
 };
