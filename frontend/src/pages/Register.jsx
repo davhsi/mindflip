@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+import bgImage from "../assets/bg.jpg"; 
 const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -24,12 +24,13 @@ const Register = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-r from-teal-300 via-blue-400 to-blue-600">
+    <div className="flex justify-center items-center min-h-screen bg-cover bg-center"
+    style={{ backgroundImage: `url(${bgImage})` }}>
       <form
         onSubmit={handleRegister}
         className="p-8 bg-white rounded-2xl shadow-lg w-full max-w-md"
       >
-        <h2 className="text-3xl font-bold mb-6 text-blue-700 text-center">
+        <h2 className="text-3xl font-bold mb-6 text-black text-center">
           Welcome to MindFlip
         </h2>
         <p className="text-center text-gray-600 mb-6">
@@ -78,7 +79,7 @@ const Register = () => {
         {/* Submit Button */}
         <button
           type="submit"
-          className="w-full bg-blue-800 text-white font-semibold py-3 rounded-lg hover:bg-blue-400 transition duration-300"
+          className="w-full bg-black text-white font-semibold py-3 rounded-lg hover:bg-blue-400 transition duration-300"
         >
           Register
         </button>
